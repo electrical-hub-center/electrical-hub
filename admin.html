@@ -85,7 +85,13 @@ body{
 <button onclick="loadOrders()">📦 Orders</button>
 <button onclick="filterOrders('COD')">💵 COD</button>
 <button onclick="filterOrders('ONLINE')">💳 Online</button>
-
+<button onclick="logout()">🚪 Logout</button>
+<script>
+function logout(){
+  localStorage.removeItem("adminLogin");
+  window.location.href="login.html";
+}
+</script>
 </div>
 
 <!-- MAIN -->
@@ -101,6 +107,14 @@ body{
 <div id="orders"></div>
 
 </div>
+<script>
+
+// 🔐 LOGIN CHECK
+if(localStorage.getItem("adminLogin")!=="true"){
+  window.location.href="login.html";
+}
+
+</script>
 
 <script type="module">
 
