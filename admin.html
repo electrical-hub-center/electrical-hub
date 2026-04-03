@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
+<title>Admin Dashboard</title>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -77,76 +78,127 @@ body{
 
 <body>
 
-<h1>📊 Admin Panel</h1>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>⚡ Admin</h2>
+
+<button onclick="loadOrders()">📦 Orders</button>
+<button onclick="filterOrders('COD')">💵 COD</button>
+<button onclick="filterOrders('ONLINE')">💳 Online</button>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h1>📊 Dashboard</h1>
+
+<div class="topbar">
+<input id="searchPhone" placeholder="Search by phone">
+<button onclick="searchOrder()">Search</button>
+</div>
 
 <div id="orders"></div>
+
+</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const app = initializeApp({
-  apiKey:"AIzaSyCm-lsMV-W9uNLRibsQalox13QHccgPFMc",
-  authDomain:"https://electrical-hub-center.firebaseapp.com",
-  projectId:"electrical-hub-center"
+const app=initializeApp({
+apiKey:"YOUR_KEY",
+authDomain:"YOUR_DOMAIN",
+projectId:"YOUR_PROJECT"
 });
 
-const db = getFirestore(app);
+const db=getFirestore(app);
 
-// 🔥 LOAD ORDERS
-async function loadOrders(){
+let allOrders=[];
 
-  let snap = await getDocs(collection(db,"orders"));
-  let out = "";
+// 🔥 LOAD ALL
+window.loadOrders = async function(){
 
-  snap.forEach(d=>{
+let snap=await getDocs(collection(db,"orders"));
+allOrders=[];
 
-    let data = d.data();
-    let id = d.id;
+snap.forEach(d=>{
+allOrders.push({id:d.id,...d.data()});
+});
 
-    let statusColor =
-      data.deliveryStatus==="Delivered" ? "green" :
-      data.deliveryStatus==="Shipped" ? "orange" : "red";
-
-    out += `
-    <div class="card">
-      <h3>${data.product}</h3>
-
-      <p>👤 ${data.name}</p>
-      <p>📞 ${data.phone}</p>
-
-      <p>💰 Payment: ${data.payment}</p>
-      <p>💳 Status: ${data.paymentStatus}</p>
-
-      <p style="color:${statusColor}">
-        🚚 ${data.deliveryStatus}
-      </p>
-
-      <select onchange="updateStatus('${id}', this.value)">
-        <option value="">Change Status</option>
-        <option>Pending</option>
-        <option>Shipped</option>
-        <option>Delivered</option>
-      </select>
-    </div>
-    `;
-  });
-
-  document.getElementById("orders").innerHTML = out;
+render(allOrders);
 }
 
-// 🔄 UPDATE STATUS
+// 🎯 RENDER
+function render(list){
+
+let out="";
+
+list.forEach(d=>{
+
+let statusClass=
+d.deliveryStatus==="Delivered"?"delivered":
+d.deliveryStatus==="Shipped"?"shipped":"pending";
+
+out+=`
+<div class="card">
+
+<h3>${d.product}</h3>
+
+<p>🆔 ${d.orderId}</p>
+<p>👤 ${d.name}</p>
+<p>📞 ${d.phone}</p>
+<p>📍 ${d.address}</p>
+
+<p>💰 ${d.payment}</p>
+<p>💳 ${d.paymentStatus}</p>
+
+<p class="${statusClass}">
+🚚 ${d.deliveryStatus}
+</p>
+
+<select onchange="updateStatus('${d.id}',this.value)">
+<option>Update Status</option>
+<option>Pending</option>
+<option>Shipped</option>
+<option>Delivered</option>
+</select>
+
+</div>
+`;
+});
+
+document.getElementById("orders").innerHTML=out||"No Orders ❌";
+}
+
+// 🔄 UPDATE
 window.updateStatus = async function(id,status){
 
-  let ref = doc(db,"orders",id);
+await updateDoc(doc(db,"orders",id),{
+deliveryStatus:status
+});
 
-  await updateDoc(ref,{
-    deliveryStatus: status
-  });
+alert("Updated ✅");
+loadOrders();
+}
 
-  alert("Updated ✅");
-  loadOrders();
+// 🔍 SEARCH
+window.searchOrder=function(){
+
+let phone=document.getElementById("searchPhone").value;
+
+let filtered=allOrders.filter(o=>o.phone.includes(phone));
+
+render(filtered);
+}
+
+// 🎯 FILTER
+window.filterOrders=function(type){
+
+let filtered=allOrders.filter(o=>o.payment===type);
+
+render(filtered);
 }
 
 // START
