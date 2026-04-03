@@ -2,26 +2,78 @@
 <html>
 <head>
 <title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+
+/* 🌌 BACKGROUND */
 body{
+  margin:0;
   font-family:Arial;
-  background:#111;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   color:white;
+}
+
+/* 🧭 SIDEBAR */
+.sidebar{
+  width:220px;
+  height:100vh;
+  position:fixed;
+  background:#111;
   padding:20px;
 }
 
-.card{
-  background:#222;
-  padding:15px;
-  margin:10px 0;
-  border-radius:10px;
+.sidebar h2{
+  color:#00f2ff;
 }
 
-select{
-  padding:5px;
+.sidebar button{
+  width:100%;
+  margin:10px 0;
+  padding:10px;
+  background:#00c6ff;
+  border:none;
+  border-radius:5px;
+  color:white;
+  cursor:pointer;
 }
+
+/* 📊 MAIN */
+.main{
+  margin-left:240px;
+  padding:20px;
+}
+
+/* 📦 CARD */
+.card{
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(10px);
+  padding:15px;
+  border-radius:15px;
+  margin:10px 0;
+}
+
+/* STATUS COLORS */
+.pending{color:red;}
+.shipped{color:orange;}
+.delivered{color:lightgreen;}
+
+/* FILTER */
+.topbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .main{margin:0;}
+}
+
 </style>
+
+</head>
 
 </head>
 
