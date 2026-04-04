@@ -12,7 +12,6 @@ body{
   color:white;
 }
 
-/* SIDEBAR */
 .sidebar{
   width:230px;
   height:100vh;
@@ -21,24 +20,19 @@ body{
   padding:20px;
 }
 
-.sidebar button{
+.sidebar button, .sidebar input{
   width:100%;
   margin:8px 0;
   padding:10px;
-  background:#00c6ff;
   border:none;
   border-radius:5px;
-  color:white;
-  cursor:pointer;
 }
 
-/* MAIN */
 .main{
   margin-left:250px;
   padding:20px;
 }
 
-/* CARD */
 .card{
   background:rgba(255,255,255,0.1);
   padding:15px;
@@ -46,24 +40,16 @@ body{
   margin:10px 0;
 }
 
-/* STATUS */
 .pending{color:red;}
 .shipped{color:orange;}
 .delivered{color:lightgreen;}
-
-
-.card p{
-  margin:4px 0;
-}
 </style>
-
 </head>
 
 <body>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-
 <h2>⚡ Admin</h2>
 
 <button onclick="loadOrders()">📦 All Orders</button>
@@ -86,7 +72,6 @@ body{
 <hr>
 
 <button onclick="logout()">🚪 Logout</button>
-
 </div>
 
 <!-- MAIN -->
@@ -99,14 +84,24 @@ body{
 
 <div id="orders"></div>
 
-
-
 <h2>📋 Booking List</h2>
 <div id="bookingList"></div>
 
+<h2>🛒 Product Management</h2>
+
+<div class="card">
+<input id="pName" placeholder="Product Name">
+<input id="pPrice" placeholder="Price">
+<input id="pImage" placeholder="Image URL">
+<textarea id="pDesc" placeholder="Description"></textarea>
+<button id="addBtn" onclick="addProduct()">➕ Add Product</button>
 </div>
 
-<!-- 🔐 LOGIN CHECK -->
+<div id="productList"></div>
+
+</div>
+
+<!-- LOGIN CHECK -->
 <script>
 if(localStorage.getItem("adminLogin")!=="true"){
   window.location.href="login.html";
@@ -118,261 +113,268 @@ function logout(){
 }
 </script>
 
-<!-- 🔥 FIREBASE -->
+<!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// ✅ SAME CONFIG (IMPORTANT)
 const app = initializeApp({
   apiKey:"AIzaSyCm-lsMV-W9uNLRibsQalox13QHccgPFMc",
   authDomain:"electrical-hub-center.firebaseapp.com",
-  projectId:"electrical-hub-center"
+  projectId:"electrical-hub-center",
+  appId:"1:128609071756:web:c821ff6616b4edd2c581a9"
 });
 
 const db = getFirestore(app);
 
 let allOrders=[];
 
-// 🔥 LOAD ORDERS
+// ================= ORDERS =================
 window.loadOrders = async function(){
+  let snap = await getDocs(collection(db,"orders"));
+  allOrders=[];
 
-let snap = await getDocs(collection(db,"orders"));
-allOrders = [];
+  snap.forEach(d=>{
+    allOrders.push({id:d.id,...d.data()});
+  });
 
-snap.forEach(d=>{
-  allOrders.push({id:d.id,...d.data()});
-});
-
-renderOrders(allOrders);
-}
-
-// 🎯 RENDER ORDERS
-function renderOrders(list){
-
-let out="";
-
-list.forEach(d=>{
-
-console.log(d);
-
-let statusClass =
-d.deliveryStatus==="Delivered"?"delivered":
-d.deliveryStatus==="Shipped"?"shipped":"pending";
-
-let payColor = d.paymentStatus==="Paid" ? "lightgreen" : "red";
-
-
-
-out+=`
-<div class="card">
-
-<img src="${d.image}" style="width:100%;height:150px;border-radius:10px;object-fit:cover;">
-
-
-<h3>${d.product}</h3>
-<p style="font-size:13px;color:#ccc;">
-📄 ${d.description ? d.description : "No Description"}
-</p>
-
-<p>🆔 ${d.orderId || "N/A"}</p>
-<p>👤 ${d.name}</p>
-<p>📞 ${d.phone}</p>
-<p>📍 ${d.address}</p>
-
-<p>💰 ₹${d.price}</p>
-
-<p style="color:${payColor}">
-💳 ${d.paymentStatus}
-</p>
-
-<p class="${statusClass}">
-🚚 ${d.deliveryStatus}
-</p>
-
-
-
-
-
-<!-- DELIVERY -->
-<select onchange="updateStatus('${d.id}',this.value)">
-<option>Update Delivery</option>
-<option>Pending</option>
-<option>Shipped</option>
-<option>Delivered</option>
-</select>
-
-<!-- PAYMENT -->
-<select onchange="updatePayment('${d.id}',this.value)">
-<option>Update Payment</option>
-<option>Pending</option>
-<option>Paid</option>
-</select>
-
-</div>
-`;
-});
-
-document.getElementById("orders").innerHTML = out || "No Orders ❌";
-}
-
-// 🔄 DELIVERY UPDATE
-window.updateStatus = async function(id,status){
-if(status=="Update Delivery") return;
-
-await updateDoc(doc(db,"orders",id),{
-  deliveryStatus:status
-});
-
-alert("Delivery Updated ✅");
-loadOrders();
-}
-
-// 💳 PAYMENT UPDATE
-window.updatePayment = async function(id,status){
-if(status=="Update Payment") return;
-
-await updateDoc(doc(db,"orders",id),{
-  paymentStatus:status
-});
-
-alert("Payment Updated ✅");
-loadOrders();
-}
-
-// 🔍 SEARCH
-window.searchOrder = function(){
-let phone = document.getElementById("searchPhone").value;
-let filtered = allOrders.filter(o=>o.phone.includes(phone));
-renderOrders(filtered);
-}
-
-// 💵 FILTER PAYMENT
-window.filterPayment = function(type){
-let filtered = allOrders.filter(o=>o.payment===type);
-renderOrders(filtered);
-}
-
-// 📅 FILTER DATE
-window.filterByDate = function(){
-
-let date = document.getElementById("filterDate").value;
-
-if(!date){
   renderOrders(allOrders);
-  return;
 }
 
-let filtered = allOrders.filter(o=>{
+function renderOrders(list){
+  let out="";
 
-if(!o.time) return false;
+  list.forEach(d=>{
 
-let dt;
+    let statusClass =
+    d.deliveryStatus==="Delivered"?"delivered":
+    d.deliveryStatus==="Shipped"?"shipped":"pending";
 
-if(o.time.seconds){
-  dt = new Date(o.time.seconds * 1000);
-}else{
-  dt = new Date(o.time);
+    let payColor = d.paymentStatus==="Paid" ? "lightgreen" : "red";
+
+    out+=`
+    <div class="card">
+      <img src="${d.image || ''}" style="width:100%;height:150px;border-radius:10px;object-fit:cover;">
+      <h3>${d.product || ''}</h3>
+
+      <p>📄 ${d.description || "No Description"}</p>
+
+      <p>🆔 ${d.orderId || "N/A"}</p>
+      <p>👤 ${d.name || ''}</p>
+      <p>📞 ${d.phone || ''}</p>
+      <p>📍 ${d.address || ''}</p>
+
+      <p>💰 ₹${d.price || 0}</p>
+
+      <p style="color:${payColor}">
+      💳 ${d.paymentStatus || 'Pending'}
+      </p>
+
+      <p class="${statusClass}">
+      🚚 ${d.deliveryStatus || 'Pending'}
+      </p>
+
+      <select onchange="updateStatus('${d.id}',this.value)">
+        <option>Update Delivery</option>
+        <option>Pending</option>
+        <option>Shipped</option>
+        <option>Delivered</option>
+      </select>
+
+      <select onchange="updatePayment('${d.id}',this.value)">
+        <option>Update Payment</option>
+        <option>Pending</option>
+        <option>Paid</option>
+      </select>
+    </div>`;
+  });
+
+  document.getElementById("orders").innerHTML = out || "No Orders ❌";
 }
 
-// LOCAL DATE
-let d = dt.getFullYear() + "-" +
-("0" + (dt.getMonth()+1)).slice(-2) + "-" +
-("0" + dt.getDate()).slice(-2);
-
-return d === date;
-
-});
-
-renderOrders(filtered);
+// UPDATE
+window.updateStatus = async function(id,status){
+  if(status==="Update Delivery") return;
+  await updateDoc(doc(db,"orders",id),{deliveryStatus:status});
+  loadOrders();
 }
 
+window.updatePayment = async function(id,status){
+  if(status==="Update Payment") return;
+  await updateDoc(doc(db,"orders",id),{paymentStatus:status});
+  loadOrders();
+}
 
+// FILTERS
+window.searchOrder = function(){
+  let phone = document.getElementById("searchPhone").value;
+  let filtered = allOrders.filter(o=>o.phone.includes(phone));
+  renderOrders(filtered);
+}
 
-// ==================
-// 📋 BOOKINGS
-// ==================
+window.filterPayment = function(type){
+  let filtered = allOrders.filter(o=>o.payment===type);
+  renderOrders(filtered);
+}
 
+window.filterByDate = function(){
+  let date = document.getElementById("filterDate").value;
+
+  let filtered = allOrders.filter(o=>{
+    if(!o.time) return false;
+    let d = new Date(o.time.seconds*1000)
+    .toISOString().split("T")[0];
+    return d===date;
+  });
+
+  renderOrders(filtered);
+}
+
+// ================= BOOKINGS =================
 window.loadBookings = async function(){
+  let snap = await getDocs(collection(db,"bookings"));
+  let out="";
 
-let snap = await getDocs(collection(db,"bookings"));
-let out="";
+  snap.forEach(doc=>{
+    let d = doc.data();
+    let dt = d.time ? new Date(d.time.seconds*1000) : "";
 
-snap.forEach(doc=>{
-let d = doc.data();
+    out+=`
+    <div class="card">
+      <h3>${d.service}</h3>
+      <p>👤 ${d.name}</p>
+      <p>📞 ${d.phone}</p>
+      <p>📍 ${d.address}</p>
+      <p>📅 ${dt}</p>
+    </div>`;
+  });
 
-let dt = d.time ? new Date(d.time.seconds*1000) : null;
-
-out+=`
-<div class="card">
-<h3>${d.service}</h3>
-<p>👤 ${d.name}</p>
-<p>📞 ${d.phone}</p>
-<p>📍 ${d.address}</p>
-<p>📅 ${dt ? dt.toLocaleString() : ""}</p>
-</div>
-`;
-});
-
-document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
+  document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
 }
 
-// 🔍 FILTER BOOKINGS
 window.filterBookings = async function(){
 
-let date = document.getElementById("bookingDate").value;
-let time = document.getElementById("bookingTime").value;
+  let date = document.getElementById("bookingDate").value;
+  let time = document.getElementById("bookingTime").value;
 
-let snap = await getDocs(collection(db,"bookings"));
-let out="";
+  let snap = await getDocs(collection(db,"bookings"));
+  let out="";
 
-snap.forEach(doc=>{
-let d = doc.data();
+  snap.forEach(doc=>{
+    let d = doc.data();
+    if(!d.time) return;
 
-if(!d.time) return;
+    let dt = new Date(d.time.seconds*1000);
 
-// 🔥 SAFE TIME FIX
-let dt;
+    let dStr = dt.toISOString().split("T")[0];
+    let tStr = dt.toTimeString().slice(0,5);
 
-if(d.time.seconds){
-  dt = new Date(d.time.seconds * 1000);
-}else{
-  dt = new Date(d.time);
+    if((!date || dStr===date) && (!time || tStr===time)){
+      out+=`
+      <div class="card">
+        <h3>${d.service}</h3>
+        <p>${d.name}</p>
+        <p>${d.phone}</p>
+        <p>${d.address}</p>
+        <p>${dt.toLocaleString()}</p>
+      </div>`;
+    }
+  });
+
+  document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
 }
 
-// ✅ LOCAL DATE (IMPORTANT FIX)
-let dStr = dt.getFullYear() + "-" +
-("0" + (dt.getMonth()+1)).slice(-2) + "-" +
-("0" + dt.getDate()).slice(-2);
+// ================= PRODUCTS =================
+window.addProduct = async function(){
 
-// ✅ LOCAL TIME
-let tStr = dt.getHours().toString().padStart(2,"0") + ":" +
-           dt.getMinutes().toString().padStart(2,"0");
+  let name = pName.value;
+  let price = pPrice.value;
+  let image = pImage.value;
+  let desc = pDesc.value;
 
-// FILTER
-if((!date || dStr===date) && (!time || tStr===time)){
+  if(!name||!price||!image){
+    alert("Fill all fields");
+    return;
+  }
 
-out+=`
-<div class="card">
-<h3>${d.service}</h3>
-<p>👤 ${d.name}</p>
-<p>📞 ${d.phone}</p>
-<p>📍 ${d.address}</p>
-<p>📅 ${dt.toLocaleString()}</p>
-</div>
-`;
+  await addDoc(collection(db,"products"),{
+    name,price,image,desc,time:new Date()
+  });
+
+  alert("Product Added ✅");
+  loadProducts();
 }
 
-});
+window.loadProducts = async function(){
 
-document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
+  let snap = await getDocs(collection(db,"products"));
+  let out="";
+
+  snap.forEach(d=>{
+    let data=d.data();
+
+    out+=`
+    <div class="card">
+      <img src="${data.image}" style="width:100%;height:150px;">
+      <h3>${data.name}</h3>
+      <p>₹${data.price}</p>
+      <p>${data.desc||""}</p>
+
+      <button onclick="deleteProduct('${d.id}')">🗑 Delete</button>
+      <button onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">✏ Edit</button>
+    </div>`;
+  });
+
+  document.getElementById("productList").innerHTML=out;
 }
 
+window.deleteProduct = async function(id){
+  await deleteDoc(doc(db,"products",id));
+  loadProducts();
+}
 
-// START
+window.editProduct = function(id,name,price,image,desc){
+
+  pName.value=name;
+  pPrice.value=price;
+  pImage.value=image;
+  pDesc.value=desc;
+
+  addBtn.innerText="Update Product";
+
+  addBtn.onclick=async function(){
+
+    await updateDoc(doc(db,"products",id),{
+      name:pName.value,
+      price:pPrice.value,
+      image:pImage.value,
+      desc:pDesc.value
+    });
+
+    alert("Updated ✅");
+
+    addBtn.innerText="➕ Add Product";
+    addBtn.onclick=addProduct;
+
+    loadProducts();
+  }
+}
+
+// AUTO LOAD
 loadOrders();
-
-
+loadBookings();
+loadProducts();
 
 </script>
 
