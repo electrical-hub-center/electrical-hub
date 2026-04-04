@@ -12,6 +12,7 @@ body{
   color:white;
 }
 
+/* SIDEBAR */
 .sidebar{
   width:230px;
   height:100vh;
@@ -20,19 +21,24 @@ body{
   padding:20px;
 }
 
-.sidebar button, .sidebar input{
+.sidebar button{
   width:100%;
   margin:8px 0;
   padding:10px;
+  background:#00c6ff;
   border:none;
   border-radius:5px;
+  color:white;
+  cursor:pointer;
 }
 
+/* MAIN */
 .main{
   margin-left:250px;
   padding:20px;
 }
 
+/* CARD */
 .card{
   background:rgba(255,255,255,0.1);
   padding:15px;
@@ -43,7 +49,21 @@ body{
 .pending{color:red;}
 .shipped{color:orange;}
 .delivered{color:lightgreen;}
+
+input, textarea{
+  width:100%;
+  margin:5px 0;
+  padding:8px;
+  border-radius:5px;
+  border:none;
+}
+
+button.small{
+  padding:6px 10px;
+  margin:5px;
+}
 </style>
+
 </head>
 
 <body>
@@ -131,7 +151,7 @@ import {
 
 const app = initializeApp({
   apiKey:"AIzaSyCm-lsMV-W9uNLRibsQalox13QHccgPFMc",
-  authDomain:"https://electrical-hub-center.firebaseapp.com",
+  authDomain:"electrical-hub-center.firebaseapp.com",
   projectId:"electrical-hub-center"
 });
 
@@ -139,7 +159,7 @@ const db = getFirestore(app);
 
 let allOrders=[];
 
-// ================= ORDERS =================
+/* ================= ORDERS ================= */
 
 window.loadOrders = async function(){
   let snap = await getDocs(collection(db,"orders"));
@@ -168,7 +188,7 @@ function renderOrders(list){
       <h3>${d.product}</h3>
       <p>${d.description || "No Description"}</p>
 
-      <p>🆔 ${d.orderId}</p>
+      <p>🆔 ${d.orderId || ""}</p>
       <p>👤 ${d.name}</p>
       <p>📞 ${d.phone}</p>
       <p>📍 ${d.address}</p>
@@ -198,10 +218,10 @@ function renderOrders(list){
     </div>`;
   });
 
-  orders.innerHTML = out;
+  document.getElementById("orders").innerHTML = out;
 }
 
-// ================= BOOKINGS =================
+/* ================= BOOKINGS ================= */
 
 window.loadBookings = async function(){
   let snap = await getDocs(collection(db,"bookings"));
@@ -224,7 +244,6 @@ window.loadBookings = async function(){
   bookingList.innerHTML = out;
 }
 
-// FILTER BOOKINGS
 window.filterBookings = async function(){
 
   let date = bookingDate.value;
@@ -257,7 +276,7 @@ window.filterBookings = async function(){
   bookingList.innerHTML = out || "No Booking ❌";
 }
 
-// ================= PRODUCTS =================
+/* ================= PRODUCTS ================= */
 
 window.addProduct = async function(){
 
@@ -267,7 +286,7 @@ window.addProduct = async function(){
   let desc = pDesc.value;
 
   if(!name||!price||!image){
-    alert("Fill all");
+    alert("Fill all fields");
     return;
   }
 
@@ -275,7 +294,7 @@ window.addProduct = async function(){
     name,price,image,desc,time:new Date()
   });
 
-  alert("Added ✅");
+  alert("Product Added ✅");
   loadProducts();
 }
 
@@ -294,8 +313,8 @@ window.loadProducts = async function(){
       <p>₹${data.price}</p>
       <p>${data.desc||""}</p>
 
-      <button onclick="deleteProduct('${d.id}')">Delete</button>
-      <button onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">Edit</button>
+      <button class="small" onclick="deleteProduct('${d.id}')">🗑 Delete</button>
+      <button class="small" onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">✏ Edit</button>
     </div>`;
   });
 
@@ -303,6 +322,7 @@ window.loadProducts = async function(){
 }
 
 window.deleteProduct = async function(id){
+  if(!confirm("Delete?")) return;
   await deleteDoc(doc(db,"products",id));
   loadProducts();
 }
@@ -314,7 +334,7 @@ window.editProduct = function(id,name,price,image,desc){
   pImage.value=image;
   pDesc.value=desc;
 
-  addBtn.innerText="Update";
+  addBtn.innerText="Update Product";
 
   addBtn.onclick=async function(){
 
@@ -334,7 +354,7 @@ window.editProduct = function(id,name,price,image,desc){
   }
 }
 
-// ================= COMMON =================
+/* ================= COMMON ================= */
 
 window.updateStatus = async function(id,status){
   if(status=="Update Delivery") return;
@@ -374,7 +394,7 @@ window.filterByDate = function(){
   renderOrders(filtered);
 }
 
-// AUTO LOAD
+/* AUTO LOAD */
 loadOrders();
 loadBookings();
 loadProducts();
