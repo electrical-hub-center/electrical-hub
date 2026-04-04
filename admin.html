@@ -328,13 +328,28 @@ let out="";
 
 snap.forEach(doc=>{
 let d = doc.data();
+
 if(!d.time) return;
 
-let dt = new Date(d.time.seconds*1000);
+// 🔥 SAFE TIME FIX
+let dt;
 
-let dStr = dt.toISOString().split("T")[0];
-let tStr = dt.toTimeString().slice(0,5);
+if(d.time.seconds){
+  dt = new Date(d.time.seconds * 1000);
+}else{
+  dt = new Date(d.time);
+}
 
+// ✅ LOCAL DATE (IMPORTANT FIX)
+let dStr = dt.getFullYear() + "-" +
+("0" + (dt.getMonth()+1)).slice(-2) + "-" +
+("0" + dt.getDate()).slice(-2);
+
+// ✅ LOCAL TIME
+let tStr = dt.getHours().toString().padStart(2,"0") + ":" +
+           dt.getMinutes().toString().padStart(2,"0");
+
+// FILTER
 if((!date || dStr===date) && (!time || tStr===time)){
 
 out+=`
@@ -352,6 +367,7 @@ out+=`
 
 document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
 }
+
 
 // START
 loadOrders();
