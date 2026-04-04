@@ -85,6 +85,11 @@ body{
 <button onclick="loadOrders()">📦 Orders</button>
 <button onclick="filterOrders('COD')">💵 COD</button>
 <button onclick="filterOrders('ONLINE')">💳 Online</button>
+<input type="date" id="filterDate">
+<button onclick="filterOrders()">Search</button>
+
+<div id="orderList"></div>
+
 <button onclick="logout()">🚪 Logout</button>
 <script>
 function logout(){
@@ -218,6 +223,74 @@ render(filtered);
 // START
 loadOrders();
 
+
+
+
+// ✅ DATE FILTER
+window.filterOrders = async function(){
+
+  let selectedDate = document.getElementById("filterDate").value;
+
+  if(selectedDate==""){
+    alert("Select Date");
+    return;
+  }
+
+  let snap = await getDocs(collection(db,"orders"));
+  let out = "";
+
+  snap.forEach(docSnap=>{
+    let d = docSnap.data();
+
+    if(d.time){
+      let orderDate = new Date(d.time.seconds * 1000)
+        .toISOString()
+        .split("T")[0];
+
+      if(orderDate === selectedDate){
+
+        // 🎨 Payment Color
+        let payColor = d.paymentStatus==="Paid" ? "green" : "red";
+
+        out += `
+        <div class="card">
+          <h3>${d.product}</h3>
+          <p>👤 ${d.name}</p>
+          <p>📞 ${d.phone}</p>
+          <p>💰 ₹${d.price}</p>
+
+          <p style="color:${payColor}">
+            💳 Payment: ${d.paymentStatus}
+          </p>
+
+          <!-- 🔥 CHANGE PAYMENT -->
+          <select onchange="updatePayment('${docSnap.id}', this.value)">
+            <option value="">Change Payment</option>
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+          </select>
+        </div>`;
+      }
+    }
+
+  });
+
+  document.getElementById("orderList").innerHTML = out || "No Orders Found ❌";
+}
+
+
+// ✅ PAYMENT UPDATE
+window.updatePayment = async function(id, status){
+
+  if(status=="") return;
+
+  await updateDoc(doc(db,"orders",id),{
+    paymentStatus: status
+  });
+
+  alert("Payment Updated ✅");
+
+}
 </script>
 
 </body>
