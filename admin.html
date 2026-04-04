@@ -258,17 +258,36 @@ window.filterByDate = function(){
 
 let date = document.getElementById("filterDate").value;
 
+if(!date){
+  renderOrders(allOrders);
+  return;
+}
+
 let filtered = allOrders.filter(o=>{
+
 if(!o.time) return false;
 
-let d = new Date(o.time.seconds*1000)
-.toISOString().split("T")[0];
+let dt;
 
-return d===date;
+if(o.time.seconds){
+  dt = new Date(o.time.seconds * 1000);
+}else{
+  dt = new Date(o.time);
+}
+
+// LOCAL DATE
+let d = dt.getFullYear() + "-" +
+("0" + (dt.getMonth()+1)).slice(-2) + "-" +
+("0" + dt.getDate()).slice(-2);
+
+return d === date;
+
 });
 
 renderOrders(filtered);
 }
+
+
 
 // ==================
 // 📋 BOOKINGS
