@@ -158,6 +158,14 @@ d.deliveryStatus==="Shipped"?"shipped":"pending";
 
 let payColor = d.paymentStatus==="Paid" ? "lightgreen" : "red";
 
+
+
+let img = d.image || "https://via.placeholder.com/150";
+
+let description = d.desc ? d.desc : "No Description";
+
+
+
 out+=`
 <div class="card">
 
@@ -185,40 +193,6 @@ out+=`
 </p>
 
 
-
-
-let img = d.image || "https://via.placeholder.com/150";
-
-let description = d.desc ? d.desc : "No Description";
-
-out+=`
-<div class="card">
-
-<img src="${img}" style="width:100%;height:150px;border-radius:10px;object-fit:cover;">
-
-<h3>${d.product}</h3>
-
-<p style="font-size:13px;color:#ccc;">
-📝 ${description}
-</p>
-
-<p>🆔 ${d.orderId || "N/A"}</p>
-<p>👤 ${d.name}</p>
-<p>📞 ${d.phone}</p>
-
-<p>💰 ₹${d.price}</p>
-
-<p style="color:${d.paymentStatus==="Paid"?"lightgreen":"red"}">
-💳 ${d.paymentStatus}
-</p>
-
-<p class="${d.deliveryStatus==="Delivered"?"delivered":
-d.deliveryStatus==="Shipped"?"shipped":"pending"}">
-🚚 ${d.deliveryStatus}
-</p>
-
-</div>
-`;
 
 
 
