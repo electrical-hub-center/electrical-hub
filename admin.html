@@ -104,22 +104,6 @@ body{
 <h2>📋 Booking List</h2>
 <div id="bookingList"></div>
 
-
-<h2>🛒 Product Management</h2>
-
-<div class="card">
-
-<input id="pName" placeholder="Product Name">
-<input id="pPrice" placeholder="Price">
-<input id="pImage" placeholder="Image URL">
-<textarea id="pDesc" placeholder="Description"></textarea>
-
-<button onclick="addProduct()">➕ Add Product</button>
-
-</div>
-
-<div id="productList"></div>
-
 </div>
 
 <!-- 🔐 LOGIN CHECK -->
@@ -354,114 +338,6 @@ document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
 loadOrders();
 
 
-
-
-
-// 🔥 IMPORT (যদি আগে না থাকে)
-import { 
-  collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-
-// ➕ ADD PRODUCT
-window.addProduct = async function(){
-
-  let name = document.getElementById("pName").value;
-  let price = document.getElementById("pPrice").value;
-  let image = document.getElementById("pImage").value;
-  let desc = document.getElementById("pDesc").value;
-
-  if(name==""||price==""||image==""){
-    alert("Fill all fields");
-    return;
-  }
-
-  await addDoc(collection(db,"products"),{
-    name, price, image, desc,
-    time: new Date()
-  });
-
-  alert("Product Added ✅");
-
-  loadProducts();
-}
-
-
-// 📦 LOAD
-window.loadProducts = async function(){
-
-  let snap = await getDocs(collection(db,"products"));
-  let out = "";
-
-  snap.forEach(d=>{
-
-    let data = d.data();
-
-    out += `
-    <div class="card">
-
-      <img src="${data.image}" 
-      style="width:100%;height:150px;border-radius:10px;">
-
-      <h3>${data.name}</h3>
-      <p>₹${data.price}</p>
-      <p>${data.desc || "No Description"}</p>
-
-      <button onclick="deleteProduct('${d.id}')">🗑 Delete</button>
-      <button onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">✏ Edit</button>
-
-    </div>
-    `;
-  });
-
-  document.getElementById("productList").innerHTML = out;
-}
-
-
-// 🗑 DELETE
-window.deleteProduct = async function(id){
-
-  if(!confirm("Delete Product?")) return;
-
-  await deleteDoc(doc(db,"products",id));
-
-  alert("Deleted ❌");
-  loadProducts();
-}
-
-
-// ✏ EDIT
-window.editProduct = function(id,name,price,image,desc){
-
-  document.getElementById("pName").value = name;
-  document.getElementById("pPrice").value = price;
-  document.getElementById("pImage").value = image;
-  document.getElementById("pDesc").value = desc;
-
-  let btn = document.querySelector("button[onclick='addProduct()']");
-  btn.innerText = "Update Product";
-
-  btn.onclick = async function(){
-
-    await updateDoc(doc(db,"products",id),{
-      name: document.getElementById("pName").value,
-      price: document.getElementById("pPrice").value,
-      image: document.getElementById("pImage").value,
-      desc: document.getElementById("pDesc").value
-    });
-
-    alert("Updated ✅");
-
-    btn.innerText = "➕ Add Product";
-    btn.onclick = addProduct;
-
-    loadProducts();
-  }
-}
-
-
-// 🚀 AUTO LOAD
-loadProducts();
 
 </script>
 
