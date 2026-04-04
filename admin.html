@@ -12,7 +12,6 @@ body{
   color:white;
 }
 
-/* SIDEBAR */
 .sidebar{
   width:230px;
   height:100vh;
@@ -21,24 +20,19 @@ body{
   padding:20px;
 }
 
-.sidebar button{
+.sidebar button, .sidebar input{
   width:100%;
   margin:8px 0;
   padding:10px;
-  background:#00c6ff;
   border:none;
   border-radius:5px;
-  color:white;
-  cursor:pointer;
 }
 
-/* MAIN */
 .main{
   margin-left:250px;
   padding:20px;
 }
 
-/* CARD */
 .card{
   background:rgba(255,255,255,0.1);
   padding:15px;
@@ -49,28 +43,13 @@ body{
 .pending{color:red;}
 .shipped{color:orange;}
 .delivered{color:lightgreen;}
-
-input, textarea{
-  width:100%;
-  margin:5px 0;
-  padding:8px;
-  border-radius:5px;
-  border:none;
-}
-
-button.small{
-  padding:6px 10px;
-  margin:5px;
-}
 </style>
-
 </head>
 
 <body>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-
 <h2>⚡ Admin</h2>
 
 <button onclick="loadOrders()">📦 All Orders</button>
@@ -93,7 +72,6 @@ button.small{
 <hr>
 
 <button onclick="logout()">🚪 Logout</button>
-
 </div>
 
 <!-- MAIN -->
@@ -123,11 +101,12 @@ button.small{
 
 </div>
 
-<!-- LOGIN -->
+<!-- LOGIN CHECK -->
 <script>
 if(localStorage.getItem("adminLogin")!=="true"){
   window.location.href="login.html";
 }
+
 function logout(){
   localStorage.removeItem("adminLogin");
   window.location.href="login.html";
@@ -149,18 +128,19 @@ import {
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// ✅ SAME CONFIG (IMPORTANT)
 const app = initializeApp({
   apiKey:"AIzaSyCm-lsMV-W9uNLRibsQalox13QHccgPFMc",
-  authDomain:"https://electrical-hub-center.firebaseapp.com",
-  projectId:"electrical-hub-center"
+  authDomain:"electrical-hub-center.firebaseapp.com",
+  projectId:"electrical-hub-center",
+  appId:"1:128609071756:web:c821ff6616b4edd2c581a9"
 });
 
 const db = getFirestore(app);
 
 let allOrders=[];
 
-/* ================= ORDERS ================= */
-
+// ================= ORDERS =================
 window.loadOrders = async function(){
   let snap = await getDocs(collection(db,"orders"));
   allOrders=[];
@@ -176,6 +156,7 @@ function renderOrders(list){
   let out="";
 
   list.forEach(d=>{
+
     let statusClass =
     d.deliveryStatus==="Delivered"?"delivered":
     d.deliveryStatus==="Shipped"?"shipped":"pending";
@@ -184,23 +165,24 @@ function renderOrders(list){
 
     out+=`
     <div class="card">
-      <img src="${d.image}" style="width:100%;height:150px;border-radius:10px;">
-      <h3>${d.product}</h3>
-      <p>${d.description || "No Description"}</p>
+      <img src="${d.image || ''}" style="width:100%;height:150px;border-radius:10px;object-fit:cover;">
+      <h3>${d.product || ''}</h3>
 
-      <p>🆔 ${d.orderId || ""}</p>
-      <p>👤 ${d.name}</p>
-      <p>📞 ${d.phone}</p>
-      <p>📍 ${d.address}</p>
+      <p>📄 ${d.description || "No Description"}</p>
 
-      <p>💰 ₹${d.price}</p>
+      <p>🆔 ${d.orderId || "N/A"}</p>
+      <p>👤 ${d.name || ''}</p>
+      <p>📞 ${d.phone || ''}</p>
+      <p>📍 ${d.address || ''}</p>
+
+      <p>💰 ₹${d.price || 0}</p>
 
       <p style="color:${payColor}">
-      💳 ${d.paymentStatus}
+      💳 ${d.paymentStatus || 'Pending'}
       </p>
 
       <p class="${statusClass}">
-      🚚 ${d.deliveryStatus}
+      🚚 ${d.deliveryStatus || 'Pending'}
       </p>
 
       <select onchange="updateStatus('${d.id}',this.value)">
@@ -218,11 +200,48 @@ function renderOrders(list){
     </div>`;
   });
 
-  document.getElementById("orders").innerHTML = out;
+  document.getElementById("orders").innerHTML = out || "No Orders ❌";
 }
 
-/* ================= BOOKINGS ================= */
+// UPDATE
+window.updateStatus = async function(id,status){
+  if(status==="Update Delivery") return;
+  await updateDoc(doc(db,"orders",id),{deliveryStatus:status});
+  loadOrders();
+}
 
+window.updatePayment = async function(id,status){
+  if(status==="Update Payment") return;
+  await updateDoc(doc(db,"orders",id),{paymentStatus:status});
+  loadOrders();
+}
+
+// FILTERS
+window.searchOrder = function(){
+  let phone = document.getElementById("searchPhone").value;
+  let filtered = allOrders.filter(o=>o.phone.includes(phone));
+  renderOrders(filtered);
+}
+
+window.filterPayment = function(type){
+  let filtered = allOrders.filter(o=>o.payment===type);
+  renderOrders(filtered);
+}
+
+window.filterByDate = function(){
+  let date = document.getElementById("filterDate").value;
+
+  let filtered = allOrders.filter(o=>{
+    if(!o.time) return false;
+    let d = new Date(o.time.seconds*1000)
+    .toISOString().split("T")[0];
+    return d===date;
+  });
+
+  renderOrders(filtered);
+}
+
+// ================= BOOKINGS =================
 window.loadBookings = async function(){
   let snap = await getDocs(collection(db,"bookings"));
   let out="";
@@ -241,13 +260,13 @@ window.loadBookings = async function(){
     </div>`;
   });
 
-  bookingList.innerHTML = out;
+  document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
 }
 
 window.filterBookings = async function(){
 
-  let date = bookingDate.value;
-  let time = bookingTime.value;
+  let date = document.getElementById("bookingDate").value;
+  let time = document.getElementById("bookingTime").value;
 
   let snap = await getDocs(collection(db,"bookings"));
   let out="";
@@ -273,11 +292,10 @@ window.filterBookings = async function(){
     }
   });
 
-  bookingList.innerHTML = out || "No Booking ❌";
+  document.getElementById("bookingList").innerHTML = out || "No Booking ❌";
 }
 
-/* ================= PRODUCTS ================= */
-
+// ================= PRODUCTS =================
 window.addProduct = async function(){
 
   let name = pName.value;
@@ -313,16 +331,15 @@ window.loadProducts = async function(){
       <p>₹${data.price}</p>
       <p>${data.desc||""}</p>
 
-      <button class="small" onclick="deleteProduct('${d.id}')">🗑 Delete</button>
-      <button class="small" onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">✏ Edit</button>
+      <button onclick="deleteProduct('${d.id}')">🗑 Delete</button>
+      <button onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">✏ Edit</button>
     </div>`;
   });
 
-  productList.innerHTML=out;
+  document.getElementById("productList").innerHTML=out;
 }
 
 window.deleteProduct = async function(id){
-  if(!confirm("Delete?")) return;
   await deleteDoc(doc(db,"products",id));
   loadProducts();
 }
@@ -354,47 +371,7 @@ window.editProduct = function(id,name,price,image,desc){
   }
 }
 
-/* ================= COMMON ================= */
-
-window.updateStatus = async function(id,status){
-  if(status=="Update Delivery") return;
-  await updateDoc(doc(db,"orders",id),{deliveryStatus:status});
-  loadOrders();
-}
-
-window.updatePayment = async function(id,status){
-  if(status=="Update Payment") return;
-  await updateDoc(doc(db,"orders",id),{paymentStatus:status});
-  loadOrders();
-}
-
-window.searchOrder = function(){
-  let phone = searchPhone.value;
-  let filtered = allOrders.filter(o=>o.phone.includes(phone));
-  renderOrders(filtered);
-}
-
-window.filterPayment = function(type){
-  let filtered = allOrders.filter(o=>o.payment===type);
-  renderOrders(filtered);
-}
-
-window.filterByDate = function(){
-  let date = filterDate.value;
-
-  let filtered = allOrders.filter(o=>{
-    if(!o.time) return false;
-
-    let d = new Date(o.time.seconds*1000)
-    .toISOString().split("T")[0];
-
-    return d===date;
-  });
-
-  renderOrders(filtered);
-}
-
-/* AUTO LOAD */
+// AUTO LOAD
 loadOrders();
 loadBookings();
 loadProducts();
