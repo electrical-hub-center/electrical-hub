@@ -91,6 +91,20 @@ body{
 
 <div id="orderList"></div>
 
+
+
+<h2>📋 All Bookings</h2>
+
+<!-- 🔍 Filter -->
+<input type="date" id="bookingDate">
+<input type="time" id="bookingTime">
+<button onclick="filterBookings()">Search</button>
+<button onclick="loadAllBookings()">Show All</button>
+
+<div id="bookingList"></div>
+
+
+
 <button onclick="logout()">🚪 Logout</button>
 <script>
 function logout(){
@@ -291,6 +305,81 @@ window.updatePayment = async function(id, status){
 
   alert("Payment Updated ✅");
 
+}
+
+
+
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+// ✅ ALL BOOKINGS SHOW
+window.loadAllBookings = async function(){
+
+  let snap = await getDocs(collection(db,"bookings"));
+  let out = "";
+
+  snap.forEach(doc=>{
+    let d = doc.data();
+
+    let timeText = "";
+    if(d.time){
+      let dt = new Date(d.time.seconds * 1000);
+      timeText = dt.toLocaleString(); // 📅 full date+time
+    }
+
+    out += `
+    <div class="card">
+      <h3>${d.service}</h3>
+      <p>👤 ${d.name}</p>
+      <p>📞 ${d.phone}</p>
+      <p>📍 ${d.address}</p>
+      <p>📝 ${d.details || ""}</p>
+      <p>📅 ${timeText}</p>
+    </div>`;
+  });
+
+  document.getElementById("bookingList").innerHTML = out || "No Bookings ❌";
+}
+
+
+// ✅ FILTER BOOKINGS (DATE + TIME)
+window.filterBookings = async function(){
+
+  let selectedDate = document.getElementById("bookingDate").value;
+  let selectedTime = document.getElementById("bookingTime").value;
+
+  let snap = await getDocs(collection(db,"bookings"));
+  let out = "";
+
+  snap.forEach(doc=>{
+    let d = doc.data();
+
+    if(d.time){
+      let dt = new Date(d.time.seconds * 1000);
+
+      let dateStr = dt.toISOString().split("T")[0];
+      let timeStr = dt.toTimeString().slice(0,5); // HH:MM
+
+      let matchDate = selectedDate ? (dateStr === selectedDate) : true;
+      let matchTime = selectedTime ? (timeStr === selectedTime) : true;
+
+      if(matchDate && matchTime){
+
+        out += `
+        <div class="card">
+          <h3>${d.service}</h3>
+          <p>👤 ${d.name}</p>
+          <p>📞 ${d.phone}</p>
+          <p>📍 ${d.address}</p>
+          <p>📝 ${d.details || ""}</p>
+          <p>📅 ${dt.toLocaleString()}</p>
+        </div>`;
+      }
+    }
+
+  });
+
+  document.getElementById("bookingList").innerHTML = out || "No Booking Found ❌";
 }
 </script>
 
