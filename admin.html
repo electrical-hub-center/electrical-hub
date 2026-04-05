@@ -345,13 +345,14 @@ style="width:100%;height:150px;object-fit:cover;">
       <p>₹${data.price}</p>
       <p>${data.desc||""}</p>
 
-      <button onclick="deleteProduct('${d.id}')">🗑 Delete</button>
-      <button onclick="editProduct('${d.id}','${data.name}','${data.price}','${data.image}','${data.desc}')">✏ Edit</button>
+      <button onclick="deleteProduct('${doc.id}')">🗑 Delete</button>
+      <button onclick="editProduct('${doc.id}','${data.name}','${data.price}','${img}','${data.desc}')">✏ Edit</button>
     </div>`;
   });
 
-  document.getElementById("productList").innerHTML=out;
+  document.getElementById("productList").innerHTML=out || "No Product ❌";
 }
+
 
 window.deleteProduct = async function(id){
   await deleteDoc(doc(db,"products",id));
@@ -360,19 +361,21 @@ window.deleteProduct = async function(id){
 
 window.editProduct = function(id,name,price,image,desc){
 
-  pName.value=name;
-  pPrice.value=price;
-  pImage.value=image;
-  pDesc.value=desc;
+  document.getElementById("pName").value = name;
+  document.getElementById("pPrice").value = price;
+  document.getElementById("images").value = image;
+  document.getElementById("pDesc").value = desc;
 
   addBtn.innerText="Update Product";
 
   addBtn.onclick=async function(){
 
+let imgs = document.getElementById("images").value.split(",");
+
     await updateDoc(doc(db,"products",id),{
       name:pName.value,
       price:pPrice.value,
-      image:pImage.value,
+      images:imgs,
       desc:pDesc.value
     });
 
