@@ -879,36 +879,7 @@ function closeGallery(){
 </script>
 <script>
 
-function showDetails(name, price, image, desc){
-document.getElementById("dName").innerText = name;
-document.getElementById("dPrice").innerText = "Price: ₹" + price;
-document.getElementById("dImage").src = image;
-document.getElementById("dDesc").innerText = desc;
 
-document.getElementById("productDetails").style.display = "block";
-}
-
-function closeDetails(){
-document.getElementById("productDetails").style.display = "none";
-}
-
-
-
-function openGallery(images){
-
-  let out="";
-
-  images.forEach(img=>{
-    out += `<img src="${img}" style="width:100%;margin:5px 0;border-radius:10px;">`;
-  });
-
-  document.getElementById("imgContainer").innerHTML = out;
-  document.getElementById("imgModal").style.display="block";
-}
-
-function closeGallery(){
-  document.getElementById("imgModal").style.display="none";
-}
 
 
 </script>
