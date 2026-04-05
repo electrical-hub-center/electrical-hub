@@ -868,6 +868,25 @@ function closeGallery(){
 
 
 </script>
+<script>
+
+function logout(){
+  localStorage.removeItem("user");   // user delete
+  localStorage.removeItem("userLoggedIn"); // old data delete
+
+  alert("Logged out successfully");
+
+  window.location.href = "login.html"; // redirect
+}
+
+
+window.logout = function(){
+  if(confirm("Are you sure you want to logout?")){
+    localStorage.removeItem("user");
+    window.location.href="login.html";
+  }
+}
+</script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <div id="imgModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000cc;z-index:999;">
