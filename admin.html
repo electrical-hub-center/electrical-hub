@@ -298,19 +298,19 @@ window.filterBookings = async function(){
 // ================= PRODUCTS =================
 window.addProduct = async function(){
 
-  let name = pName.value;
-  let price = pPrice.value;
-  let image = pImage.value;
-  let desc = pDesc.value;
+  let name = document.getElementById("pName").value;
+  let price = document.getElementById("pPrice").value;
+  let desc = document.getElementById("pDesc").value;
 
-  if(!name||!price||!image){
-    alert("Fill all fields");
+  let images = document.getElementById("images").value
+  .split(",")
+  .map(i => i.trim());
+
+ if(name=="" || price=="" || images[0]==""){
+    alert("Fill all details ❌");
     return;
   }
 
-
-
-let images = document.getElementById("images").value.split(",");
 
 
   await addDoc(collection(db,"products"),{
