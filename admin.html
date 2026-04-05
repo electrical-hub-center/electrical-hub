@@ -308,8 +308,13 @@ window.addProduct = async function(){
     return;
   }
 
+
+
+let images = document.getElementById("images").value.split(",");
+
+
   await addDoc(collection(db,"products"),{
-    name,price,image,desc,time:new Date()
+    name,price,images,desc,time:new Date()
   });
 
   alert("Product Added ✅");
