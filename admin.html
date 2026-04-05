@@ -302,19 +302,24 @@ window.addProduct = async function(){
   let price = document.getElementById("pPrice").value;
   let desc = document.getElementById("pDesc").value;
 
-  let images = document.getElementById("images").value
-  .split(",")
-  .map(i => i.trim());
+  let images = document.getElementById("images").value;
 
- if(name=="" || price=="" || images[0]==""){
+ if(name=="" || price=="" || images==""){
     alert("Fill all details ❌");
     return;
   }
 
+// 🔥 MULTIPLE IMAGE ARRAY
+  let imageArray = images.split(",");
+
 
 
   await addDoc(collection(db,"products"),{
-    name,price,images,desc,time:new Date()
+    name:name,
+    price:price,
+    desc:desc,
+    images:imageArray, 
+    time:new Date()
   });
 
   alert("Product Added ✅");
