@@ -803,7 +803,7 @@ let firstImg = d.images ? d.images[0] : d.image;
 
     out += `
     <div class="card">
-       <img src="${firstImg}" onclick='openGallery(${JSON.stringify(d.images)})'" style="width:100%;height:120px;">
+      <img src="${d.images[0]}" style="width:100%;height:120px;">
       <h4>${d.name}</h4>
       <p>₹${d.price}</p>
 
@@ -811,7 +811,7 @@ let firstImg = d.images ? d.images[0] : d.image;
         Order Now
       </button>
 
-  <button onclick='openGallery(${JSON.stringify(d.images)})'>
+  <button onclick="openGallery(${JSON.stringify(d.images)})">
     View Images
   </button>
 
