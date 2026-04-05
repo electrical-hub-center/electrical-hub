@@ -898,25 +898,6 @@ window.closeGallery = function(){
   document.getElementById("imgModal").style.display = "none";
 }
 
-// 🔥 VIEW IMAGE FUNCTION (ADD THIS)
-window.openGallery = function(imgString){
-
-  let images = imgString.split("|");
-
-  let out = "";
-
-  images.forEach(img=>{
-    out += `<img src="${img}" style="width:100%;margin:10px 0;border-radius:10px;">`;
-  });
-
-  document.getElementById("imgContainer").innerHTML = out;
-  document.getElementById("imgModal").style.display = "block";
-}
-
-// 🔥 CLOSE BUTTON
-window.closeGallery = function(){
-  document.getElementById("imgModal").style.display = "none";
-}
 </script>
 
 </script>
