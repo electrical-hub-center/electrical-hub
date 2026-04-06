@@ -280,6 +280,28 @@ textarea::placeholder{
   display:none;
 
 }
+
+
+/* 🔥 PRODUCT SLIDER FINAL FIX */
+.slider{
+  display:flex;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.slider img{
+  flex:0 0 100% !important;
+  width:100% !important;
+  height:150px;
+  object-fit:cover;
+  scroll-snap-align:start;
+  border-radius:10px;
+}
+
+.slider::-webkit-scrollbar{
+  display:none;
+}
 </style>
 
 </head>
@@ -846,7 +868,7 @@ document.getElementById("trackResult").innerHTML = out || "❌ No Order Found";
 
 
 
-// 🔥 LOAD PRODUCTS
+// 🔥 LOAD PRODUCTS FINAL
 async function loadProducts(){
 
   let snap = await getDocs(collection(db,"products"));
@@ -857,25 +879,21 @@ async function loadProducts(){
     let d = doc.data();
     let images = d.images || [d.image];
 
-// 🔥 SWIPE SLIDER
-    let sliderHTML = `<div class="slider">`;
+    // 🔥 SLIDER (ONLY THIS)
+    let slider = `<div class="slider">`;
 
     images.forEach(img=>{
-      sliderHTML += `<img src="${img}">`;
+      slider += `<img src="${img}">`;
     });
 
-    sliderHTML += `</div>`;
-
+    slider += `</div>`;
 
     let imgString = images.join("|");
 
     out += `
     <div class="card">
 
-      <img id="img_${doc.id}" 
-           src="${images[0]}" 
-           onclick="nextImage('${doc.id}','${imgString}')"
-           style="width:100%;height:150px;object-fit:cover;border-radius:10px;cursor:pointer;">
+      ${slider}
 
       <h4>${d.name}</h4>
       <p>₹${d.price}</p>
